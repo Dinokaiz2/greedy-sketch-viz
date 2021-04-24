@@ -11,24 +11,29 @@ def l_inf(x1, x2):
 default_pd = np.array([[2, 4], [3, 6]])
 
 #input is a persistence diagram, output is a greedy permutation of points. runs in O(n^2)
-def naive_greedy_perm(pd=default_pd, n=-1):
+def naive_greedy_sketch(pd, n=-1, minimal=True):
     if n>len(pd):
         raise ValueError("Length of greedy permutation greater than number of points in persistence diagram")
     if n<0:
         n = len(pd)
-    perm = np.empty(n, dtype=np.int64)                    #stores indices of points of pd according to greedy permutation
-    perm_points = np.empty((n,2))                         #to be returned: points according to greedy permutation
-    dist_seq = np.empty((n,1))                            #sequence of greedy distances which is also returned
 
+    #To be returned at all times
+    sketches = []                                         #greedy sketches to be returned
+    transport_plans = []                                  #transportation plans of all sketches
+
+    #Following to be returned iff minimal=False
+    perm = np.empty((n,2))                                #stores points of pd ordered in a greedy permutation
+    dist_seq = np.empty((n,1))                            #sequence of greedy distances which is also returned
     rnn = np.empty((len(pd), 2))                          #store reverse nearest neighbor of all points of pd
     dist = np.empty(len(pd))                              #store distances of every point in pd to its reverse nearest neighbor
+    if not(minimal): voronoi = np.empty((n, len(pd), 2))  #discrete voronoi cells for each sketch
     
     max_dist = 0                                          #temporary variable to store maximum distance of the next greedy point within an iteration
-    furthest = 0                                          #temporary variable to store 
+    furthest = 0                                          #temporary variable to store furthest point index to compute the next greedy point
     
     #point [0,0] is the diagonal
 
-    #initialize rnn data structure to sketch 0 as reverse nearest neighbor of all points is the diagonal
+    #initialize rnn data structure as reverse nearest neighbor of all points is the diagonal
     for i in range(len(pd)):
         rnn[i] = [0,0]
         dist[i] = l_inf(pd[i], diagonal_point(pd[i]))
@@ -39,24 +44,50 @@ def naive_greedy_perm(pd=default_pd, n=-1):
     
     for i in range(n):
         #update reverse nearest neighbors of every point using newly added point
-        perm[i] = furthest
+        perm[i] = pd[furthest].copy()
         dist_seq[i] = max_dist
+        transport = dict()                               #temporary variable to store mass movement within successive sketches
         #print("Current round: "+str(i)+" furthest point: (" + str(round(pd[furthest][0],2))+", "+str(round(pd[furthest][1],2))+"), index: "+str(furthest))
         for j in range(len(pd)):
             if l_inf(pd[j], pd[furthest]) < dist[j]:
                 #print("j: "+str(j)+ " point: (" + str(round(pd[j][0],2))+", "+str(round(pd[j][1],2))+") old rnn: ("+str(round(rnn[j][0],2))+", "+str(round(rnn[j][1],2))+"), old distance = "+str(round(dist[j],2))+" new rnn: ("+str(round(pd[furthest][0],2))+", "+str(round(pd[furthest][1],2))+"), new distance = "+str(round(l_inf(pd[j], pd[furthest]),2)))
+                if tuple(rnn[j]) in transport:                  #one point lost by old rnn of j
+                    transport[tuple(rnn[j])] -= 1                   
+                else:
+                    transport[tuple(rnn[j])] = -1
                 rnn[j] = pd[furthest].copy()
                 dist[j] = l_inf(pd[j], pd[furthest])
+                if tuple(rnn[j]) in transport:                  #one point gained by new rnn of j
+                    transport[tuple(rnn[j])] += 1
+                else:
+                    transport[tuple(rnn[j])] = 1
+
         #update max_dist and select next furthest point
         max_dist=0
         for j in range(len(pd)):
             if dist[j] > max_dist:
                 max_dist = dist[j]
                 furthest = j
+        
+        #store current voronoi diagram
+        if not(minimal): voronoi[i] = rnn.copy()
+        
+        #append mass movement from previous sketch to the transportation plan
+        transport_plans.append(transport)
+                
+    sketches = generate_sketches(perm, n=n)
+
+    ret = {
+        "sketches": sketches,
+        "transport_plans": transport_plans
+        }
+
+    if not(minimal):
+        ret["dist"]=dist_seq
+        ret["voronoi"]=voronoi
+        ret["perm"]=perm
     
-    for i in range(n):
-        perm_points[i] = pd[perm[i]].copy()
-    return perm_points, dist_seq
+    return ret
 
 #input is a greedy sequence of points of a pd. output is a series of greedy sketches of that pd.
 def generate_sketches(perm, n=-1):
