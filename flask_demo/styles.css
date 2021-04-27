@@ -1,0 +1,32 @@
+body {
+  font-family: sans-serif;
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: black;
+    color: white;
+  }
+  a {
+    color: #00b1ed;
+  }
+  a:visited {
+    color: #1f75fe;
+  }
+  a:active {
+    color: #ff0000;
+  }
+}
+
+h1.title {
+  font-size: 2rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+canvas {
+  outline: black 2px solid;
+}

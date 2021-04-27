@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Canvas Demo</title>
+
+    <link href="styles.css" rel="stylesheet" />
+  </head>
+  <body>
+    <h1>Canvas Demo</h1>
+    <p>A simple canvas you can draw points on and click run on.</p>
+    <p>
+      The idea is to eventually have run hooked up to a Flask webserver, which
+      would do most of the calculations using our library and then have our thin
+      layer of Javascript to combine all the SVGs or whatever into an attractive
+      animation.
+    </p>
+    <p>Have fun!</p>
+
+    <div style="text-align: center">
+      <button id="run" type="button">Run</button>
+      <br />
+      <canvas id="canvas" width="600" height="600"></canvas>
+    </div>
+
+    <h2>Notes</h2>
+    <ul>
+      <li>The button run button could be better placed.</li>
+      <li>This locks us into PyGAL. Is that okay?</li>
+      <li>Could this be used in a Jupyter notebook? IDK</li>
+    </ul>
+
+    <script src="index.js"></script>
+  </body>
+</html>
