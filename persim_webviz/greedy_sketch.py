@@ -3,7 +3,7 @@ from collections import defaultdict
 import numpy as np
 
 X, Y = 0, 1
-
+DIAGONAL = (0, 0)
 
 def diagonal_point(x):
     """Get point closest to x on diagonal."""
@@ -13,9 +13,6 @@ def diagonal_point(x):
 def l_inf(x1, x2):
     """Compute l-infinity distance between two 2D-points on persistence diagram"""
     return max(abs(x1[Y] - x2[Y]), abs(x1[X] - x2[X]))
-
-
-default_pd = np.array([[2, 4], [3, 6]])
 
 
 def naive_greedy_sketch(pd, n=-1, minimal=True):
