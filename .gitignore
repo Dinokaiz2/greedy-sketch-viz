@@ -5,3 +5,6 @@ __pycache__/
 
 # Virtualenv
 venv/
+
+# Ignore Jupyter notebook stuff
+.ipynb_checkpoints/
