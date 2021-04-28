@@ -1,10 +1,12 @@
 from collections import defaultdict
 
 import numpy as np
+import persim
 
 X, Y = 0, 1
-DIAGONAL = (0, 0)
 
+# point (0,0) is the diagonal
+DIAGONAL = (0, 0)
 
 def diagonal_point(x):
     """Get point closest to x on diagonal."""
@@ -29,24 +31,22 @@ def naive_greedy_sketch(pd, n=-1, minimal=True):
         n = len(pd)
 
     # To be returned at all times
-    # greedy sketches to be returned
-    sketches = []
+    # stores points of pd ordered in a greedy permutation
+    perm = np.empty((n, 2))
     # transportation plans of all sketches
     transport_plans = []
 
-    # Following to be returned iff minimal=False
-    # stores points of pd ordered in a greedy permutation
-    perm = np.empty((n, 2))
-    # sequence of greedy distances which is also returned
+    # Following to be returned if minimal=False
+    # sequence of greedy distances
     dist_seq = np.empty((n, 1))
+    if not minimal:
+        # discrete voronoi cells for each sketch
+        voronoi = np.empty((n+1, len(pd), 2))
+
     # store reverse nearest neighbor of all points of pd
     rnn = np.empty((len(pd), 2))
     # store distances of every point in pd to its reverse nearest neighbor
     dist = np.empty(len(pd))
-    if not minimal:
-        # discrete voronoi cells for each sketch
-        voronoi = np.empty((n, len(pd), 2))
-
     # temporary variable to store maximum distance of the next greedy point
     # within an iteration
     max_dist = 0
@@ -54,23 +54,25 @@ def naive_greedy_sketch(pd, n=-1, minimal=True):
     # greedy point
     furthest = 0
 
-    # point (0,0) is the diagonal
-
-    # initialize rnn data structure as reverse nearest neighbor of all points
-    # is the diagonal
+    # initialize RNN of all points as the diagonal
     for i in range(len(pd)):
-        rnn[i] = (0, 0)
+        rnn[i] = DIAGONAL
         dist[i] = l_inf(pd[i], diagonal_point(pd[i]))
         # print(f"Point = {pd[i]}, distance = {dist[i]}")
         if dist[i] > max_dist:
             max_dist = dist[i]
             furthest = i
+    #initialize first transportation plan and first voronoi diagram
+    transport = defaultdict(int)
+    transport[DIAGONAL] = len(pd)
+    transport_plans.append(transport)
+    if not minimal:
+        voronoi[0] = rnn.copy()
 
     for i in range(n):
         # print(f"Current round: {i} furthest point: {pd[furthest]}, index: {furthest}")
 
-        # update reverse nearest neighbors of every point using newly added
-        # point
+        # update RNN of every point using newly added point
         perm[i] = pd[furthest].copy()
         dist_seq[i] = max_dist
 
@@ -84,13 +86,13 @@ def naive_greedy_sketch(pd, n=-1, minimal=True):
             #     f"j: {j}, point: {pd[j]}, old rnn: {rnn[j]}, old distance = {dist[j]:0.2f}, new rnn: {pd[furthest]}, new distance = {l_inf(pd[j], pd[furthest]):0.2f}"
             # )
 
-            # one point lost by old rnn of j
+            # one point lost by old RNN of j
             transport[tuple(rnn[j])] -= 1
 
             rnn[j] = pd[furthest].copy()
             dist[j] = l_inf(pd[j], pd[furthest])
 
-            # one point gained by new rnn of j
+            # one point gained by new RNN of j
             transport[tuple(rnn[j])] += 1
 
         # update max_dist and select next furthest point
@@ -102,28 +104,25 @@ def naive_greedy_sketch(pd, n=-1, minimal=True):
 
         # store current voronoi diagram
         if not minimal:
-            voronoi[i] = rnn.copy()
+            voronoi[i+1] = rnn.copy()
 
         # append mass movement from previous sketch to the transportation plan
         transport_plans.append(transport)
 
-    sketches = generate_sketches(perm, n=n)
-
-    ret = {"sketches": sketches, "transport_plans": transport_plans}
+    ret = {"perm": perm, "transport_plans": transport_plans}
 
     if not minimal:
         ret["dist"] = dist_seq
         ret["voronoi"] = voronoi
-        ret["perm"] = perm
-        ret["persistence_diagram"] = pd
+        ret["sketches"] = generate_sketches(perm, n=n)
 
     return ret
 
-
+#not to be used generally
 def generate_sketches(perm, n=-1):
     """
-    Input is a greedy sequence of points of a pd. Output is a series of
-    greedy sketches of that pd.
+    Input is a greedy sequence of n points of a pd.
+    Output is a series of (n+1) greedy sketches of that pd.
     """
     if n > len(perm):
         raise ValueError(
@@ -132,10 +131,54 @@ def generate_sketches(perm, n=-1):
     if n < 0:
         n = len(perm)
     sketches = []
-    for i in range(1, n + 1):
+    for i in range(n + 1):
         sketch = np.empty((i, 2))
         for j in range(i):
             sketch[j][X] = perm[j][X]
             sketch[j][Y] = perm[j][Y]
         sketches.append(sketch)
     return sketches
+
+def compute_mult(transport_plans):
+    """
+    Input is a series of transportation plans for n sketches ordered in greedy permutation
+    Output is pointwise multiplicity of nth sketch
+    """    
+    #test if ordering of sketches is greedy
+    
+    multiplicity = defaultdict(int)
+    for i in range(len(transport_plans)):
+        for point in transport_plans[i]:
+            multiplicity[point] += transport_plans[i][point]
+    return multiplicity
+
+def intersketch_bd(perm_a, transport_plans_a, perm_b, transport_plans_b):
+    """
+    Input are two greedy permutations and corresponding transportation plans of arbitrary persistence diagrams
+    Output is the bottleneck distance between sketch_a and sketch_b
+    """
+    if len(perm_a)+1 != len(transport_plans_a):
+        raise ValueError(
+            "Mismatch between transportation plans and permutation for sketch a"
+        )
+    if len(perm_b)+1 != len(transport_plans_b):
+        raise ValueError(
+            "Mismatch between transportation plans and permutation for sketch b"
+        )
+
+    mult_a = compute_mult(transport_plans_a)
+    mult_b = compute_mult(transport_plans_b)
+    sketch_a = np.empty((transport_plans_a[0][DIAGONAL],2))
+    sketch_b = np.empty((transport_plans_b[0][DIAGONAL],2))
+    i = 0
+    for point in perm_a:
+        for count in range(mult_a[tuple(point)]):
+            sketch_a[i] = point
+            i += 1
+    i = 0
+    for point in perm_b:
+        for count in range(mult_b[tuple(point)]):
+            sketch_b[i] = point
+            i += 1
+    #Naive algorithm runs in O(n_a^2): reconstruct voronoi of sketch_a and find point in sketch_b furthest from its rnn in voronoi of sketch_a
+    return persim.bottleneck(sketch_a, sketch_b, matching = False)
