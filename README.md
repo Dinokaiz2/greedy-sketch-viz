@@ -1,4 +1,4 @@
-# persim-webviz
+# greedy-sketch
 
 ## Sketches
 

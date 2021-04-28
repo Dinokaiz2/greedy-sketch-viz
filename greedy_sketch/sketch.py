@@ -5,6 +5,7 @@ import numpy as np
 X, Y = 0, 1
 DIAGONAL = (0, 0)
 
+
 def diagonal_point(x):
     """Get point closest to x on diagonal."""
     return (x[X] + x[Y]) / 2, (x[X] + x[Y]) / 2
@@ -114,6 +115,7 @@ def naive_greedy_sketch(pd, n=-1, minimal=True):
         ret["dist"] = dist_seq
         ret["voronoi"] = voronoi
         ret["perm"] = perm
+        ret["persistence_diagram"] = pd
 
     return ret
 
