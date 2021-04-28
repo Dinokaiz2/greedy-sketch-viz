@@ -5,7 +5,7 @@ import numpy as np
 import persim
 from matplotlib import animation
 
-from persim_webviz import DIAGONAL, diagonal_point
+from greedy_sketch.sketch import DIAGONAL, diagonal_point
 
 # Cool paper about these colors: https://eleanormaclure.files.wordpress.com/2011/03/colour-coding.pdf
 # White, black, and grey removed
@@ -58,7 +58,7 @@ def make_animation(
     point_colors = {tuple(point): next(colors) for point in perm}
     point_colors[DIAGONAL] = diagonal_color
 
-    graph = fig.scatter(
+    graph = ax.scatter(
         [point[0] for point in orig_pts], [point[1] for point in orig_pts], s=5
     )
     [bottleneck_main_line] = ax.plot(-1, -1, color="black")
@@ -73,7 +73,7 @@ def make_animation(
             legend=False,
             ax=ax,
         )
-        fig.close()
+        plt.close(fig)
 
     pts = orig_pts.tolist()
 
