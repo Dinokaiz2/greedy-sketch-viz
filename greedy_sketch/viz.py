@@ -36,6 +36,8 @@ DEFAULT_DIAGONAL_COLOR = "lightgrey"
 DEFAULT_SIZE_X = 300
 DEFAULT_SIZE_Y = 300
 
+X, Y = 0, 1
+
 
 def make_animation(
     greedy_sketch,
@@ -61,18 +63,23 @@ def make_animation(
     graph = ax.scatter(
         [point[0] for point in orig_pts], [point[1] for point in orig_pts], s=5
     )
-    [bottleneck_main_line] = ax.plot(-1, -1, color="black")
-    [bottleneck_dash_line] = ax.plot(-1, -1, color="black", linestyle="dotted")
+    [bneck_main_line] = ax.plot(-1, -1, color="black")
+    # Densly dotted linestyle from
+    # https://matplotlib.org/stable/gallery/lines_bars_and_markers/linestyles.html
+    [bneck_sub_line] = ax.plot(-1, -1, color="black", linestyle=(0, (1, 1)))
+
+    # Draw the diagonal
+    persim.plot_diagrams(
+        np.zeros((1, 2)),
+        xy_range=[0, size_x, 0, size_y],
+        show=False,
+        legend=False,
+        ax=ax,
+    )
 
     def init_animation():
-        # Draw diagonal
-        persim.plot_diagrams(
-            np.zeros((1, 2)),
-            xy_range=[0, size_x, 0, size_y],
-            show=False,
-            legend=False,
-            ax=ax,
-        )
+        # This prevents the final frame from being displayed as if it were a
+        # still figure
         plt.close(fig)
 
     pts = orig_pts.tolist()
@@ -109,16 +116,18 @@ def make_animation(
         if tuple(bneck_nn) == DIAGONAL:
             bneck_nn = diagonal_point(bneck)
 
-        vline = [bneck_nn[0], bneck_nn[0]], [bneck[1], bneck_nn[1]]
-        hline = [bneck[0], bneck_nn[0]], [bneck[1], bneck[1]]
-        if abs(bneck[0] - bneck_nn[0]) >= abs(bneck[1] - bneck_nn[1]):
+        # We draw these such that the main line always comes from the
+        # bottleneck point.
+        # The way to read this is if we want to draw a line from (x1,y1) to
+        # (x2,y2) we do line.set_data([x1, x2], [y1, y2])
+        if abs(bneck[0] - bneck_nn[0]) > abs(bneck[Y] - bneck_nn[Y]):
             # The horizontal line (x) is the main line
-            bottleneck_main_line.set_data(*hline)
-            bottleneck_dash_line.set_data(*vline)
+            bneck_main_line.set_data([bneck[X], bneck_nn[X]], [bneck[Y], bneck[Y]])
+            bneck_sub_line.set_data([bneck_nn[X], bneck_nn[X]], [bneck[Y], bneck_nn[Y]])
         else:
             # The vertical line (y) is the main line
-            bottleneck_main_line.set_data(*vline)
-            bottleneck_dash_line.set_data(*hline)
+            bneck_main_line.set_data([bneck[X], bneck[X]], [bneck[Y], bneck_nn[Y]])
+            bneck_sub_line.set_data([bneck[X], bneck_nn[X]], [bneck_nn[Y], bneck_nn[Y]])
 
     return animation.FuncAnimation(
         fig,
