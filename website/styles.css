@@ -21,12 +21,17 @@ body {
   }
 }
 
-h1.title {
-  font-size: 2rem;
-  margin-top: 0.25rem;
-  margin-bottom: 0.5rem;
+.display-area {
+  text-align: center;
 }
 
-canvas {
+.canvas-buttons {
+  margin-bottom: 0.5em;
+}
+
+#canvas {
   outline: black 2px solid;
+  /* This makes the height either 60% or 60vh, whichever is larger, but not
+   * larger than 100% */
+  width: min(100%, max(60%, 60vh));
 }

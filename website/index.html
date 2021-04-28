@@ -2,6 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width">
+
     <title>Canvas Demo</title>
 
     <link href="styles.css" rel="stylesheet" />
@@ -24,10 +26,12 @@
     </p>
     <p>Have fun!</p>
 
-    <div style="text-align: center">
-      <button id="run" type="button">Run</button>
-      <br />
-      <canvas id="canvas" width="600" height="600"></canvas>
+    <div class="display-area">
+      <div class="canvas-buttons">
+        <button id="clear" class="canvas-btn" type="button">Clear</button>
+        <button id="run" class="canvas-btn" type="button">Run</button>
+      </div>
+      <canvas id="canvas" height="512" width="512"></canvas>
     </div>
 
     <div class="animation">

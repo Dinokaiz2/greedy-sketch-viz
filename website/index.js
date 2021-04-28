@@ -1,21 +1,44 @@
 const POINT_SIZE = 3;
-const RED = "#ff0000";
-const BLUE = "#0000ff";
+const POINT_COLOR = "#ff0000";
 
 const canvas = document.getElementById("canvas");
 const run = document.getElementById("run");
+const clear = document.getElementById("clear");
 const animationContainer = document.getElementById("animation-container");
+
+// Canvas height and width are guaranteed to be the same
+const CANVAS_BUF_SIZE = canvas.width;
 
 let points = [];
 
 canvas.onclick = function (event) {
+  console.log(event);
+
   let rect = canvas.getBoundingClientRect();
-  let x = event.clientX - rect.left;
-  let y = event.clientY - rect.top;
+  // Internally, the canvas is always CANVAS_SIZE, so we have to rescale the
+  // points accordingly
+  let x = (event.clientX - rect.left) * (CANVAS_BUF_SIZE / rect.width);
+  let y = (event.clientY - rect.top) * (CANVAS_BUF_SIZE / rect.height);
 
-  points.push([x, y]);
+  console.log(x, y);
+  // We want to record the points y-axis "naturally" (i.e. up means increasing)
+  points.push([x, CANVAS_BUF_SIZE - y]);
 
-  drawPoint(x, y, RED);
+  let ctx = canvas.getContext("2d");
+  ctx.fillStyle = POINT_COLOR;
+  ctx.fillRect(
+    x - (POINT_SIZE - 1) / 2,
+    y - (POINT_SIZE - 1) / 2,
+    POINT_SIZE,
+    POINT_SIZE
+  );
+};
+
+clear.onclick = function (_event) {
+  points = [];
+
+  let ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 };
 
 run.onclick = function (_event) {
@@ -43,12 +66,3 @@ run.onclick = function (_event) {
     })
   );
 };
-
-function drawPoint(x, y, color) {
-  let ctx = canvas.getContext("2d");
-
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.arc(x, y, POINT_SIZE, 0, Math.PI * 2, true);
-  ctx.fill();
-}
