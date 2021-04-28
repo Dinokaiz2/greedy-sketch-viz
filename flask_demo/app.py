@@ -1,12 +1,10 @@
 import base64
 import logging
-from pathlib import Path
-from tempfile import TemporaryDirectory
+from io import BytesIO
 
 import numpy as np
 from flask import Flask, jsonify, request
 from greedy_sketch import naive_greedy_sketch, viz
-from matplotlib.animation import HTMLWriter
 from matplotlib.figure import Figure
 from ripser import ripser
 
@@ -40,15 +38,16 @@ def animate():
         ax=ax,
     )
 
-    print(anim.to_jshtml())
+    images = []
+    for data in anim.new_saved_frame_seq():
+        anim._draw_next_frame(data, blit=False)
+        buf = BytesIO()
+        fig.savefig(buf, format="png")
+        # Must decode bytes to ensure that it gets added to string correctly
+        encoded = base64.encodebytes(buf.getvalue()).decode("ascii")
+        images.append(f"data:image/png;base64,{encoded}")
 
-    return anim.to_html5_video()
-
-    # with TemporaryDirectory() as tmpdir:
-    #     path = Path(tmpdir, "temp.html")
-    #     writer = HTMLWriter()
-    #     anim.save(str(path), writer=writer)
-    # return jsonify(writer._saved_frames)
+    return jsonify(images)
 
 
 @app.route("/")

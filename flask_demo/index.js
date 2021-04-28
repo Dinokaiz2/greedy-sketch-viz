@@ -27,18 +27,12 @@ run.onclick = function (_event) {
     if (this.readyState !== 4 || this.status !== 200) {
       return;
     }
-    animationContainer.innerHTML = this.response;
-    setTimeout(function () {
-      for (child of animationContainer.children) {
-        console.log(child);
-        if (child.tagName === "SCRIPT") {
-          console.log("evaling");
-          // TODO: THIS IS VERY VERY VERY EVIL. Instead, I should figure out how
-          // to return just the frames I want
-          eval(child.innerHTML);
-        }
-      }
-    }, 0);
+    let frames = JSON.parse(this.response);
+    let img_id = "_anim_img";
+    let slider_id = "_anim_slider";
+    let loop_select_id = "_anim_loop_select";
+    // This must be global
+    anim = new Animation(frames, img_id, slider_id, 500.0, loop_select_id);
   };
 
   r.send(
