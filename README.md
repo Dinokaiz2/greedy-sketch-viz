@@ -1,4 +1,4 @@
-# greedy-sketch
+# greedy-sketch-viz
 
 ## Sketches
 
