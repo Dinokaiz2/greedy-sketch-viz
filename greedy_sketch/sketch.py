@@ -115,6 +115,7 @@ def naive_greedy_sketch(pd, n=-1, minimal=True):
         ret["dist"] = dist_seq
         ret["voronoi"] = voronoi
         ret["sketches"] = generate_sketches(perm, n=n)
+        ret["persistence_diagram"] = pd
 
     return ret
 

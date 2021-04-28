@@ -31,7 +31,7 @@ DEFAULT_COLORS = [
     "#2B3D26",
 ]
 # Reserve grey for the diagonal
-DEFAULT_DIAGONAL_COLOR = "#848482"
+DEFAULT_DIAGONAL_COLOR = "lightgrey"
 
 DEFAULT_SIZE_X = 300
 DEFAULT_SIZE_Y = 300
@@ -79,7 +79,7 @@ def make_animation(
 
     def animate(frame):
         # Add the sketch point
-        pts.append(perm[frame].tolist())
+        pts = np.concatenate((orig_pts, sketches[frame]), axis=0)
 
         # Draw points
         xs = [x for x, y in pts]
@@ -89,7 +89,7 @@ def make_animation(
             # Color other points based on their nearest neighbor
             [point_colors[tuple(voronoi[frame, i])] for i, _pt in enumerate(orig_pts)]
             # Color all old sketch points
-            + ["black"] * frame
+            + ["black"] * (frame - 1)
             # Color new sketch point
             + ["red"]
         )
@@ -97,11 +97,11 @@ def make_animation(
             # Make other points small
             [5] * len(orig_pts)
             # Make sketch points large
-            + [20] * (frame + 1)
+            + [20] * (frame)
         )
 
         # Show bottleneck distance
-        bneck = perm[frame + 1]
+        bneck = perm[frame]
         # We get the first point where the match occurs. This returns two identical
         # indexes because bottleneck is 2D I believe.
         bneck_idx = np.where(orig_pts == bneck)[0][0]
@@ -109,9 +109,9 @@ def make_animation(
         if tuple(bneck_nn) == DIAGONAL:
             bneck_nn = diagonal_point(bneck)
 
-        vline = [bneck[0], bneck_nn[0]], [bneck[1], bneck[1]]
-        hline = [bneck_nn[0], bneck_nn[0]], [bneck[1], bneck_nn[1]]
-        if abs(bneck[0] - bneck_nn[0]) > abs(bneck[1] - bneck_nn[1]):
+        vline = [bneck_nn[0], bneck_nn[0]], [bneck[1], bneck_nn[1]]
+        hline = [bneck[0], bneck_nn[0]], [bneck[1], bneck[1]]
+        if abs(bneck[0] - bneck_nn[0]) >= abs(bneck[1] - bneck_nn[1]):
             # The horizontal line (x) is the main line
             bottleneck_main_line.set_data(*hline)
             bottleneck_dash_line.set_data(*vline)
