@@ -4,7 +4,7 @@ with open("README.md", "r") as f:
     long_description = f.read()
 
 setuptools.setup(
-    name="persim_webviz",
+    name="greedy_sketch",
     version="0.1.0",
     author=", ".join(["Kaiz Akhtar", "Eli W. Hunter", "Siddharth Sheth"]),
     author_email=", ".join(
