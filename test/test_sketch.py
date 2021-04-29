@@ -29,10 +29,9 @@ class TestSketch:
     def test_greedy_single_transport(self):
         '''Case: Correct transportation plan computed for a single point pd'''
         single_pd_sketch = gs.naive_greedy_sketch(single_pd)
-        assert len(single_pd_sketch['transport_plans']) == 2
-        assert single_pd_sketch['transport_plans'][0][(0,0)] == 1
-        assert single_pd_sketch['transport_plans'][1][(0,0)] == -1
-        assert single_pd_sketch['transport_plans'][1][(2,4)] == 1
+        plans = [{(0,0): 1},
+            {(0,0): -1, (2,4):1}]
+        assert single_pd_sketch['transport_plans'] == plans
 
     def test_greedy_double_perm(self):
         '''Case: Correct greedy permutation computed for a double point pd'''
@@ -42,12 +41,10 @@ class TestSketch:
     def test_greedy_double_transport(self):
         '''Case: Correct transportation plan computed for a double point pd'''
         double_pd_sketch = gs.naive_greedy_sketch(double_pd)
-        assert len(double_pd_sketch['transport_plans']) == 3
-        assert double_pd_sketch['transport_plans'][0][(0,0)] == 2
-        assert double_pd_sketch['transport_plans'][1][(0,0)] == -1
-        assert double_pd_sketch['transport_plans'][1][(3,6)] == 1
-        assert double_pd_sketch['transport_plans'][2][(0,0)] == -1
-        assert double_pd_sketch['transport_plans'][2][(2,4)] == 1
+        plans = [{(0,0): 2},
+            {(0,0): -1, (3,6):1},
+            {(0,0): -1, (2,4):1}]
+        assert double_pd_sketch['transport_plans'] == plans
     
     def test_greedy_perm(self):
         '''Case: Correct greedy permutation computed for an 8 point pd'''
@@ -57,24 +54,18 @@ class TestSketch:
     def test_greedy_transport(self):
         '''Case: Correct transportation plan computed for an 8 point pd'''
         pd_sketch = gs.naive_greedy_sketch(default_pd)
-        assert pd_sketch['transport_plans'][0][(0,0)] == 8
-        assert pd_sketch['transport_plans'][1][(0,0)] == -2
-        assert pd_sketch['transport_plans'][1][(12,60)] == 2
-        assert pd_sketch['transport_plans'][2][(0,0)] == -1
-        assert pd_sketch['transport_plans'][2][(7,35)] == 1
-        assert pd_sketch['transport_plans'][3][(12,60)] == -1
-        assert pd_sketch['transport_plans'][3][(10,50)] == 1
-        assert pd_sketch['transport_plans'][4][(0,0)] == -1
-        assert pd_sketch['transport_plans'][4][(6,24)] == 1
-        assert pd_sketch['transport_plans'][5][(0,0)] == -1
-        assert pd_sketch['transport_plans'][5][(5,10)] == 1
-        assert pd_sketch['transport_plans'][6][(0,0)] == -1
-        assert pd_sketch['transport_plans'][6][(4,8)] == 1
-        assert pd_sketch['transport_plans'][7][(0,0)] == -1
-        assert pd_sketch['transport_plans'][7][(3,6)] == 1
-        assert pd_sketch['transport_plans'][8][(0,0)] == -1
-        assert pd_sketch['transport_plans'][8][(2,4)] == 1
-    
+
+        plans = [{(0, 0): 8}, 
+            {(0, 0): -2, (12, 60): 2}, 
+            {(0, 0): -1, (7, 35): 1}, 
+            {(12, 60): -1, (10, 50): 1}, 
+            {(0, 0): -1, (6, 24): 1}, 
+            {(0, 0): -1, (5, 10): 1}, 
+            {(0, 0): -1, (4, 8): 1}, 
+            {(0, 0): -1, (3, 6): 1}, 
+            {(0, 0): -1, (2, 4): 1}]
+        assert pd_sketch['transport_plans']==plans
+
     def test_greedy_voronoi(self):
         '''Case: Correct voronoi cells computed for a pd'''
         voronoi0 = [[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]
