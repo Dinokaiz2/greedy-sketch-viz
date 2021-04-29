@@ -1,8 +1,6 @@
-import itertools
-
+import itertools, persim, ripser
 import matplotlib.pyplot as plt
 import numpy as np
-import persim
 from matplotlib import animation
 
 from greedy_sketch.sketch import DIAGONAL, diagonal_point
@@ -57,9 +55,12 @@ def make_animation(
     orig_pts = greedy_sketch["persistence_diagram"]
 
     colors = itertools.cycle(colors)
-    point_colors = {tuple(point): next(colors) for point in perm}
+    point_colors = {
+        tuple(point): next(colors) for point in sorted(perm, key=lambda p: np.linalg.norm(p))
+    }
     point_colors[DIAGONAL] = diagonal_color
 
+    ax.set_title("Incremental Greedy Sketches")
     graph = ax.scatter(
         [point[0] for point in orig_pts], [point[1] for point in orig_pts], s=5
     )
@@ -68,10 +69,11 @@ def make_animation(
     # https://matplotlib.org/stable/gallery/lines_bars_and_markers/linestyles.html
     [bneck_sub_line] = ax.plot(-1, -1, color="black", linestyle=(0, (1, 1)))
 
-    # Draw the diagonal
+    # Draw the diagonal, scale axes to a little past the final death
+    final_death = max(death for birth, death in orig_pts)
     persim.plot_diagrams(
         np.zeros((1, 2)),
-        xy_range=[0, size_x, 0, size_y],
+        xy_range=[0, final_death * 1.1, 0, final_death * 1.1],
         show=False,
         legend=False,
         ax=ax,
@@ -89,9 +91,7 @@ def make_animation(
         pts = np.concatenate((orig_pts, sketches[frame]), axis=0)
 
         # Draw points
-        xs = [x for x, y in pts]
-        ys = [y for x, y in pts]
-        graph.set_offsets(np.vstack((xs, ys)).T)
+        graph.set_offsets(pts)
         graph.set_facecolors(
             # Color other points based on their nearest neighbor
             [point_colors[tuple(voronoi[frame, i])] for i, _pt in enumerate(orig_pts)]
@@ -138,3 +138,46 @@ def make_animation(
         frames=len(sketches) - 1,
         interval=500,
     )
+
+def make_persistent_homology_animation(points):
+    """Create a visualization of building a persistence diagram from a set of 2d points.
+
+    Input is an n x 2 `numpy.ndarray`. Output is a `matplotlib.animation.FuncAnimation`
+    that lasts ~5 seconds with two animated subplots: the original points with animated
+    inflating balls around them, and the persistence diagram being built.
+    """
+    # Create two square subplots with square aspect ratios
+    fig, (data_ax, pd_ax) = plt.subplots(1, 2)
+    fig.set_figwidth(10)
+    data_ax.set_title("Data Set")
+    data_ax.set_aspect("equal", adjustable="datalim")
+    pd_ax.set_title("Persistence Diagram")
+    pd_ax.set_aspect("equal")
+
+    # Build persistence diagram and calculate how we need to scale the axes for it
+    pd = ripser.ripser(points)["dgms"][1]
+    final_death = max(death for birth, death in pd)
+    pd_ax_lim = final_death * 1.1
+    radius_arrow_offset = pd_ax_lim / 50
+
+    # Build initial state of the plots
+    balls = [data_ax.add_patch(plt.Circle(point, 10, color="lightblue")) for point in points]
+    data_ax.plot(*points.T, 'o')
+    [radius_arrow] = pd_ax.plot([radius_arrow_offset], [-radius_arrow_offset], marker=(3, 0, 45), markersize=10)
+    pd_graph = pd_ax.scatter([], [])
+    persim.plot_diagrams(np.zeros((1, 2)), ax=pd_ax, xy_range=[0, pd_ax_lim, 0, pd_ax_lim], legend=False)
+
+    def animate(frame):
+        # Inflate balls
+        for ball in balls:
+            ball.set_radius(frame * 0.5 * (final_death / 100))
+        dist = frame * (final_death / 100)
+        # Plot points for living and dead loops according to ball radius
+        # For loops that are still alive, plot them as if they're about to die, a bit transparent
+        pd_pts = [(birth, min(death, dist)) for birth, death in pd if birth < dist]
+        pd_graph.set_offsets(pd_pts)
+        pd_graph.set_facecolors(["#FF4500FF" if death < dist else "#FF450066" for birth, death in pd_pts])
+        radius_arrow.set_data([dist + radius_arrow_offset], [dist - radius_arrow_offset])
+
+    plt.close()
+    return animation.FuncAnimation(fig, animate, frames=110, interval=50)
