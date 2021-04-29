@@ -156,20 +156,19 @@ def compute_mult(transport_plans):
             multiplicity[point] += transport_plans[i][point]
     return multiplicity
 
-
-def intersketch_bd(perm_a, transport_plans_a, perm_b, transport_plans_b):
+def intersketch_bd(transport_plans_a, transport_plans_b):
     """
-    Input are two greedy permutations and corresponding transportation plans of arbitrary persistence diagrams
+    Input are two transportation plans of arbitrary persistence diagrams
     Output is the bottleneck distance between sketch_a and sketch_b
     """
-    if len(perm_a) + 1 != len(transport_plans_a):
-        raise ValueError(
-            "Mismatch between transportation plans and permutation for sketch a"
-        )
-    if len(perm_b) + 1 != len(transport_plans_b):
-        raise ValueError(
-            "Mismatch between transportation plans and permutation for sketch b"
-        )
+    # if len(perm_a)+1 != len(transport_plans_a):
+    #     raise ValueError(
+    #         "Mismatch between transportation plans and permutation for sketch a"
+    #     )
+    # if len(perm_b)+1 != len(transport_plans_b):
+    #     raise ValueError(
+    #         "Mismatch between transportation plans and permutation for sketch b"
+    #     )
 
     mult_a = compute_mult(transport_plans_a)
     mult_b = compute_mult(transport_plans_b)

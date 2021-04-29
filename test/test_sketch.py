@@ -125,24 +125,17 @@ def test_intersketch_bd_same():
     pd_sketch = gs.naive_greedy_sketch(default_pd, minimal=False)
     perm = pd_sketch["perm"]
     transport_plans = pd_sketch["transport_plans"]
-    bd = gs.intersketch_bd(perm[:1], transport_plans[:2], perm[:8], transport_plans[:9])
+    bd = gs.intersketch_bd(transport_plans[:2], transport_plans[:9])
     assert bd == 14
 
 
 def test_intersketch_bd_diff():
     """Case: Correct bottleneck distance computed for 2 non successive sketches of different pds"""
     pd_sketch = gs.naive_greedy_sketch(default_pd)
-    perm = pd_sketch["perm"]
     transport_plans = pd_sketch["transport_plans"]
 
     double_pd_sketch = gs.naive_greedy_sketch(double_pd)
-    double_perm = double_pd_sketch["perm"]
     double_transport_plans = double_pd_sketch["transport_plans"]
 
-    bd = gs.intersketch_bd(
-        perm[:1],
-        transport_plans[:2],
-        double_perm[:1],
-        double_transport_plans[:2],
-    )
+    bd = gs.intersketch_bd(transport_plans[:2], double_transport_plans[:2])
     assert bd == 24
