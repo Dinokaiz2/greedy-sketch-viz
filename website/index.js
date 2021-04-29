@@ -58,11 +58,5 @@ run.onclick = function (_event) {
     anim = new Animation(frames, img_id, slider_id, 500.0, loop_select_id);
   };
 
-  r.send(
-    JSON.stringify({
-      points: points,
-      // TODO: Have input
-      frames: 15,
-    })
-  );
+  r.send(JSON.stringify(points));
 };

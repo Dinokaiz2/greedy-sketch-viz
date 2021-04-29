@@ -16,15 +16,11 @@ app = Flask(__name__, static_folder="", static_url_path="")
 @app.route("/api/animate", methods=["POST"])
 def animate():
     app.logger.debug(f"received request {request.json}")
-    points = np.array(request.json["points"], dtype=np.double)
+    points = np.array(request.json, dtype=np.double)
     if len(points) == 0:
         raise Exception("points must be non-empty")
     if points.shape[1] != 2:
         raise Exception("expected 2d points int")
-
-    frames = request.json["frames"]
-    if type(frames) is not int:
-        raise Exception("expected 'frames' as int")
 
     rips = ripser(points)
     app.logger.debug(f"using rips={rips}")
@@ -38,6 +34,20 @@ def animate():
         ax=ax,
     )
 
+    # Ideally, we'd just return `anim.to_jshtml()`. However, for that to work
+    # it has <script> tags inside of the HTML, so if the client were to just
+    # shove those into a DOM node, they wouldn't get executed for security. We
+    # could `eval()` them but that is really gross, insecure, and also had a
+    # ton of errors when I tried.
+    #
+    # Instead, our webpage has a duplicate of the animation HTML and Javscript
+    # itself and the server just returns the frames of the animation in the way
+    # that JS expects. However, matplotlib.animation provides no easy way to
+    # inspect individual frames of the animation without hitting the
+    # filesystem. Instead, it prefers you to save files in a specific format
+    # (e.g. gif, mp4), so we have to manually call the private
+    # `Animation._draw_next_frame()` to draw the frame and then save that to a
+    # PNG in memory.
     images = []
     for data in anim.new_saved_frame_seq():
         anim._draw_next_frame(data, blit=False)
