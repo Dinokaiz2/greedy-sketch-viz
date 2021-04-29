@@ -13,7 +13,12 @@ setuptools.setup(
     description="Web-based visualizations for persim",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/Dinokaiz2/persim-webviz",
+    url="https://github.com/Dinokaiz2/greedy-sketch-viz",
+    install_requires=[
+        "persim",
+        "matplotlib",
+        "numpy",
+    ],
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
