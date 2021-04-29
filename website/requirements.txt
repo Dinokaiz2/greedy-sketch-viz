@@ -3,6 +3,8 @@ cycler==0.10.0
 Cython==0.29.23
 Deprecated==1.2.12
 Flask==1.1.2
+git+https://github.com/Dinokaiz2/greedy-sketch-viz.git@main
+gunicorn==20.1.0
 hopcroftkarp==1.2.5
 itsdangerous==1.1.0
 Jinja2==2.11.3
@@ -16,7 +18,7 @@ Pillow==8.2.0
 pyparsing==2.4.7
 python-dateutil==2.8.1
 ripser==0.6.0
-scikit-learn==0.24.1
+scikit-learn==0.24.2
 scipy==1.6.3
 six==1.15.0
 threadpoolctl==2.1.0
