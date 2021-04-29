@@ -55,7 +55,9 @@ def make_animation(
     orig_pts = greedy_sketch["persistence_diagram"]
 
     colors = itertools.cycle(colors)
-    point_colors = {tuple(point): next(colors) for point in perm}
+    point_colors = {
+        tuple(point): next(colors) for point in sorted(perm, key=lambda p: np.linalg.norm(p))
+    }
     point_colors[DIAGONAL] = diagonal_color
 
     ax.set_title("Incremental Greedy Sketches")
