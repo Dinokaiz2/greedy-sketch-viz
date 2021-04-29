@@ -20,10 +20,48 @@ def l_inf(x1, x2):
 
 
 def naive_greedy_sketch(pd, n=-1, minimal=True):
-    """
-    Input is a persistence diagram. Output is a greedy permutation of points.
+    """Generate greedy permutation of points in persistence diagram.
+
     Runs in O(n^2).
+
+    Parameters
+    ----------
+    pd : numpy.ndarray
+        A n by 2 array of points in the persistence diagram.
+    n : int, optional
+        The size of the largest greedy sketch to produce. By default this is
+        all points of the persistence diagrams.
+    minimal : bool, default=False
+        Whether to include extra information, detailed in the "Returns".
+
+    Returns
+    -------
+    dict
+        "perm": The points ordered in the order of the greedy permutation.
+
+        "transport_plans": The changes of the mass of points over successive
+        sketches. Taking the sum up to some sketch will give you the
+        multiplicity of each point.
+
+        "dist" (when `minimal=False`): A list of distances between each point
+        in the original persistence diagram and the greedy sketch. The first
+        index `i` is the `i`th greedy sketch to look at and the second index
+        `j` is the smallest distance between the `j`th point in the original
+        persistence diagram (`pd`) and the greedy sketch. Distance is
+        determined by the `l_inf` metric.
+
+        "voronoi" (when `minimal=False`): A list of the discrete Voronoi cells
+        for each sketch. The first index `i` is the `i`th greedy sketch to look
+        at and the second index `j` is the point in the greedy sketch which the
+        `j`th point in the original persistence diagram maps to.
+
+        "sketches" (when `minimal=False`): A list of full descriptions of each
+        greedy sketch.
+
+        "sketches" (when `minimal=False`): The original persistence diagram
+        (`pd`) passed in.
     """
+
     if n > len(pd):
         raise ValueError(
             "Length of greedy permutation greater than number of points in persistence diagram"
@@ -123,9 +161,17 @@ def naive_greedy_sketch(pd, n=-1, minimal=True):
 
 # not to be used generally
 def generate_sketches(perm, n=-1):
-    """
-    Input is a greedy sequence of n points of a pd.
-    Output is a series of (n+1) greedy sketches of that pd.
+    """Generate a series of `n+1` greedy sketches of the given persistence diagram.
+
+    Parameters
+    ----------
+    perm : numpy.ndarray
+        The points ordered in the order of the greedy permutation for the
+        persistence diagram.
+
+    Returns
+    ------
+        A series of `n+1` greedy sketches of the given persistence diagram.
     """
     if n > len(perm):
         raise ValueError(
@@ -156,11 +202,22 @@ def compute_mult(transport_plans):
             multiplicity[point] += transport_plans[i][point]
     return multiplicity
 
+
 def intersketch_bd(transport_plans_a, transport_plans_b):
+    """Find the bottleneck distance between two greedy sketches.
+
+    Parameters
+    ----------
+    transport_plans_a, transport_plans_b
+        Transportation plans of arbitrary persistence diagrams. Each plan
+        corresponds to one persistence diagram.
+
+    Returns
+    -------
+    float
+        Bottleneck distance between the two sketches.
     """
-    Input are two transportation plans of arbitrary persistence diagrams
-    Output is the bottleneck distance between sketch_a and sketch_b
-    """
+
     # if len(perm_a)+1 != len(transport_plans_a):
     #     raise ValueError(
     #         "Mismatch between transportation plans and permutation for sketch a"

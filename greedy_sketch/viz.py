@@ -175,7 +175,7 @@ def make_persistent_homology_animation(points, data_ax=None, pd_ax=None):
 
     Parameters
     ----------
-    points : dict
+    points : numpy.ndarray
         A n by 2 array of points. Each row is a point. The first column is the
         `x` coordinates and the second is the `y` coordinates.
     data_ax : matplotlib.axes.Axes, optional
