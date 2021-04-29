@@ -1,6 +1,9 @@
-import itertools, persim, ripser
+import itertools
+
 import matplotlib.pyplot as plt
 import numpy as np
+import persim
+import ripser
 from matplotlib import animation
 
 from greedy_sketch.sketch import DIAGONAL, diagonal_point
@@ -31,18 +34,13 @@ DEFAULT_COLORS = [
 # Reserve grey for the diagonal
 DEFAULT_DIAGONAL_COLOR = "lightgrey"
 
-DEFAULT_SIZE_X = 300
-DEFAULT_SIZE_Y = 300
-
 X, Y = 0, 1
 
 
-def make_animation(
+def make_greedy_sketch_animation(
     greedy_sketch,
     colors=DEFAULT_COLORS,
     diagonal_color=DEFAULT_DIAGONAL_COLOR,
-    size_x=DEFAULT_SIZE_X,
-    size_y=DEFAULT_SIZE_Y,
     ax=None,
 ):
     ax = ax or plt.gca()
@@ -56,7 +54,8 @@ def make_animation(
 
     colors = itertools.cycle(colors)
     point_colors = {
-        tuple(point): next(colors) for point in sorted(perm, key=lambda p: np.linalg.norm(p))
+        tuple(point): next(colors)
+        for point in sorted(perm, key=lambda p: np.linalg.norm(p))
     }
     point_colors[DIAGONAL] = diagonal_color
 
@@ -84,8 +83,6 @@ def make_animation(
         # still figure
         plt.close(fig)
 
-    pts = orig_pts.tolist()
-
     def animate(frame):
         # Add the sketch point
         pts = np.concatenate((orig_pts, sketches[frame]), axis=0)
@@ -109,8 +106,8 @@ def make_animation(
 
         # Show bottleneck distance
         bneck = perm[frame]
-        # We get the first point where the match occurs. This returns two identical
-        # indexes because bottleneck is 2D I believe.
+        # We get the first point where the match occurs. This returns two
+        # identical indexes because bottleneck is 2D I believe.
         bneck_idx = np.where(orig_pts == bneck)[0][0]
         bneck_nn = voronoi[frame, bneck_idx]
         if tuple(bneck_nn) == DIAGONAL:
@@ -139,45 +136,83 @@ def make_animation(
         interval=500,
     )
 
-def make_persistent_homology_animation(points):
-    """Create a visualization of building a persistence diagram from a set of 2d points.
+
+LIVE_POINT_COLOR = "#FF4500FF"
+DEAD_POINT_COLOR = "#FF450066"
+
+
+def make_persistent_homology_animation(points, data_ax=None, pd_ax=None):
+    """Create visualization of building persistence diagram from set of 2d points.
 
     Input is an n x 2 `numpy.ndarray`. Output is a `matplotlib.animation.FuncAnimation`
     that lasts ~5 seconds with two animated subplots: the original points with animated
     inflating balls around them, and the persistence diagram being built.
     """
     # Create two square subplots with square aspect ratios
-    fig, (data_ax, pd_ax) = plt.subplots(1, 2)
-    fig.set_figwidth(10)
-    data_ax.set_title("Data Set")
-    data_ax.set_aspect("equal", adjustable="datalim")
-    pd_ax.set_title("Persistence Diagram")
-    pd_ax.set_aspect("equal")
+    if data_ax is None and pd_ax is None:
+        fig, (data_ax, pd_ax) = plt.subplots(1, 2)
+        fig.set_figwidth(10)
+        data_ax.set_title("Data Set")
+        data_ax.set_aspect("equal", adjustable="datalim")
+        pd_ax.set_title("Persistence Diagram")
+        pd_ax.set_aspect("equal")
+    if (data_ax is None and pd_ax is not None) or (
+        data_ax is not None and pd_ax is None
+    ):
+        raise ValueError("data_ax and pd_ax must be given together")
+    if data_ax.figure is not pd_ax.figure:
+        raise ValueError("data_ax and pd_ax must be from same figure")
+    fig = data_ax.figure
 
-    # Build persistence diagram and calculate how we need to scale the axes for it
+    # Build persistence diagram and calculate how we need to scale the axes for
+    # it
     pd = ripser.ripser(points)["dgms"][1]
     final_death = max(death for birth, death in pd)
     pd_ax_lim = final_death * 1.1
     radius_arrow_offset = pd_ax_lim / 50
 
     # Build initial state of the plots
-    balls = [data_ax.add_patch(plt.Circle(point, 10, color="lightblue")) for point in points]
-    data_ax.plot(*points.T, 'o')
-    [radius_arrow] = pd_ax.plot([radius_arrow_offset], [-radius_arrow_offset], marker=(3, 0, 45), markersize=10)
+    balls = [
+        data_ax.add_patch(plt.Circle(point, 10, color="lightblue")) for point in points
+    ]
+    data_ax.plot(*points.T, "o")
+    [radius_arrow] = pd_ax.plot(
+        [radius_arrow_offset], [-radius_arrow_offset], marker=(3, 0, 45), markersize=10
+    )
     pd_graph = pd_ax.scatter([], [])
-    persim.plot_diagrams(np.zeros((1, 2)), ax=pd_ax, xy_range=[0, pd_ax_lim, 0, pd_ax_lim], legend=False)
+    persim.plot_diagrams(
+        np.zeros((1, 2)), ax=pd_ax, xy_range=[0, pd_ax_lim, 0, pd_ax_lim], legend=False
+    )
+
+    def init_animation():
+        # This prevents the final frame from being displayed as if it were a
+        # still figure
+        plt.close(fig)
 
     def animate(frame):
         # Inflate balls
         for ball in balls:
             ball.set_radius(frame * 0.5 * (final_death / 100))
         dist = frame * (final_death / 100)
-        # Plot points for living and dead loops according to ball radius
-        # For loops that are still alive, plot them as if they're about to die, a bit transparent
+        # Plot points for living and dead loops according to ball radius. For
+        # loops that are still alive, plot them as if they're about to die, a
+        # bit transparent
         pd_pts = [(birth, min(death, dist)) for birth, death in pd if birth < dist]
         pd_graph.set_offsets(pd_pts)
-        pd_graph.set_facecolors(["#FF4500FF" if death < dist else "#FF450066" for birth, death in pd_pts])
-        radius_arrow.set_data([dist + radius_arrow_offset], [dist - radius_arrow_offset])
+        pd_graph.set_facecolors(
+            [
+                LIVE_POINT_COLOR if death < dist else DEAD_POINT_COLOR
+                for birth, death in pd_pts
+            ]
+        )
+        radius_arrow.set_data(
+            [dist + radius_arrow_offset], [dist - radius_arrow_offset]
+        )
 
-    plt.close()
-    return animation.FuncAnimation(fig, animate, frames=110, interval=50)
+    return animation.FuncAnimation(
+        fig,
+        animate,
+        init_func=init_animation,
+        frames=110,
+        interval=50,
+    )

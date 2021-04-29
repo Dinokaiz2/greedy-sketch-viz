@@ -29,7 +29,7 @@ def animate():
 
     fig = Figure()
     ax = fig.add_subplot()
-    anim = viz.make_animation(
+    anim = viz.make_greedy_sketch_animation(
         naive_greedy_sketch(rips["dgms"][1], minimal=False),
         ax=ax,
     )
