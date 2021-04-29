@@ -8,6 +8,7 @@ X, Y = 0, 1
 # point (0,0) is the diagonal
 DIAGONAL = (0, 0)
 
+
 def diagonal_point(x):
     """Get point closest to x on diagonal."""
     return (x[X] + x[Y]) / 2, (x[X] + x[Y]) / 2
@@ -41,7 +42,7 @@ def naive_greedy_sketch(pd, n=-1, minimal=True):
     dist_seq = np.empty((n, 1))
     if not minimal:
         # discrete voronoi cells for each sketch
-        voronoi = np.empty((n+1, len(pd), 2))
+        voronoi = np.empty((n + 1, len(pd), 2))
 
     # store reverse nearest neighbor of all points of pd
     rnn = np.empty((len(pd), 2))
@@ -62,7 +63,7 @@ def naive_greedy_sketch(pd, n=-1, minimal=True):
         if dist[i] > max_dist:
             max_dist = dist[i]
             furthest = i
-    #initialize first transportation plan and first voronoi diagram
+    # initialize first transportation plan and first voronoi diagram
     transport = defaultdict(int)
     transport[DIAGONAL] = len(pd)
     transport_plans.append(transport)
@@ -104,7 +105,7 @@ def naive_greedy_sketch(pd, n=-1, minimal=True):
 
         # store current voronoi diagram
         if not minimal:
-            voronoi[i+1] = rnn.copy()
+            voronoi[i + 1] = rnn.copy()
 
         # append mass movement from previous sketch to the transportation plan
         transport_plans.append(transport)
@@ -115,10 +116,12 @@ def naive_greedy_sketch(pd, n=-1, minimal=True):
         ret["dist"] = dist_seq
         ret["voronoi"] = voronoi
         ret["sketches"] = generate_sketches(perm, n=n)
+        ret["persistence_diagram"] = pd
 
     return ret
 
-#not to be used generally
+
+# not to be used generally
 def generate_sketches(perm, n=-1):
     """
     Input is a greedy sequence of n points of a pd.
@@ -139,37 +142,39 @@ def generate_sketches(perm, n=-1):
         sketches.append(sketch)
     return sketches
 
+
 def compute_mult(transport_plans):
     """
     Input is a series of transportation plans for n sketches ordered in greedy permutation
     Output is pointwise multiplicity of nth sketch
-    """    
-    #test if ordering of sketches is greedy
-    
+    """
+    # test if ordering of sketches is greedy
+
     multiplicity = defaultdict(int)
     for i in range(len(transport_plans)):
         for point in transport_plans[i]:
             multiplicity[point] += transport_plans[i][point]
     return multiplicity
 
+
 def intersketch_bd(perm_a, transport_plans_a, perm_b, transport_plans_b):
     """
     Input are two greedy permutations and corresponding transportation plans of arbitrary persistence diagrams
     Output is the bottleneck distance between sketch_a and sketch_b
     """
-    if len(perm_a)+1 != len(transport_plans_a):
+    if len(perm_a) + 1 != len(transport_plans_a):
         raise ValueError(
             "Mismatch between transportation plans and permutation for sketch a"
         )
-    if len(perm_b)+1 != len(transport_plans_b):
+    if len(perm_b) + 1 != len(transport_plans_b):
         raise ValueError(
             "Mismatch between transportation plans and permutation for sketch b"
         )
 
     mult_a = compute_mult(transport_plans_a)
     mult_b = compute_mult(transport_plans_b)
-    sketch_a = np.empty((transport_plans_a[0][DIAGONAL],2))
-    sketch_b = np.empty((transport_plans_b[0][DIAGONAL],2))
+    sketch_a = np.empty((transport_plans_a[0][DIAGONAL], 2))
+    sketch_b = np.empty((transport_plans_b[0][DIAGONAL], 2))
     points_a = mult_a.keys()
     points_b = mult_b.keys()
     i = 0
@@ -182,4 +187,4 @@ def intersketch_bd(perm_a, transport_plans_a, perm_b, transport_plans_b):
         for count in range(mult_b[tuple(point)]):
             sketch_b[i] = point
             i += 1
-    return persim.bottleneck(sketch_a, sketch_b, matching = False)
+    return persim.bottleneck(sketch_a, sketch_b, matching=False)
