@@ -67,10 +67,11 @@ def make_animation(
     # https://matplotlib.org/stable/gallery/lines_bars_and_markers/linestyles.html
     [bneck_sub_line] = ax.plot(-1, -1, color="black", linestyle=(0, (1, 1)))
 
-    # Draw the diagonal
+    # Draw the diagonal, scale axes to a little past the final death
+    final_death = max(death for birth, death in orig_pts)
     persim.plot_diagrams(
         np.zeros((1, 2)),
-        xy_range=[0, size_x, 0, size_y],
+        xy_range=[0, final_death * 1.1, 0, final_death * 1.1],
         show=False,
         legend=False,
         ax=ax,
