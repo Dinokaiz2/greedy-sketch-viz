@@ -1,0 +1,66 @@
+body {
+  font-family: sans-serif;
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: black;
+    color: white;
+  }
+  a {
+    color: #00b1ed;
+  }
+  a:visited {
+    color: #1f75fe;
+  }
+  a:active {
+    color: #ff0000;
+  }
+}
+
+.display-area {
+  text-align: center;
+}
+
+.canvas-buttons {
+  margin-bottom: 0.5em;
+}
+
+#canvas {
+  outline: black 2px solid;
+  /* This makes the height either 60% or 60vh, whichever is larger, but not
+   * larger than 100% */
+  width: min(100%, max(60%, 60vh));
+}
+
+/* This is a modified version of what Animation.to_jshtml() returns */
+.animation {
+  display: inline-block;
+  text-align: center;
+  max-width: 100%;
+}
+.animation > img {
+  max-width: 100%;
+}
+input[type="range"].anim-slider {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+.anim-buttons {
+  margin: 8px 0px;
+}
+.anim-buttons button {
+  padding: 0;
+  width: 36px;
+}
+.anim-state label {
+  margin-right: 8px;
+}
+.anim-state input {
+  margin: 0;
+  vertical-align: middle;
+}

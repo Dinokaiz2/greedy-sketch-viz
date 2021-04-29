@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+
+    <title>Greedy Sketch Visualization</title>
+
+    <meta property="og:title" content="Greedy Sketch Visualization" />
+
+    <link href="styles.css" rel="stylesheet" />
+
+    <!-- For animation -->
+    <link
+      href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <h1>Greedy Sketch Visualization</h1>
+    <p>
+      Place down as many points as you'd like and see an animation of the greedy
+      sketch of that those points'
+      <a
+        href="https://towardsdatascience.com/persistent-homology-with-examples-1974d4b9c3d0"
+        >persistence diagram</a
+      >.
+    </p>
+
+    <div class="display-area">
+      <div class="canvas-buttons">
+        <button id="clear" class="canvas-btn" type="button">Clear</button>
+        <button id="run" class="canvas-btn" type="button">Run</button>
+      </div>
+      <canvas id="canvas" height="512" width="512"></canvas>
+      <br />
+      <div class="animation">
+        <img id="_anim_img" />
+        <div class="anim-controls">
+          <input
+            id="_anim_slider"
+            type="range"
+            class="anim-slider"
+            name="points"
+            min="0"
+            max="1"
+            step="1"
+            value="0"
+            oninput="anim.set_frame(parseInt(this.value));"
+          />
+          <div class="anim-buttons">
+            <button
+              title="Decrease speed"
+              aria-label="Decrease speed"
+              onclick="anim.slower()"
+            >
+              <i class="fa fa-minus"></i>
+            </button>
+            <button
+              title="First frame"
+              aria-label="First frame"
+              onclick="anim.first_frame()"
+            >
+              <i class="fa fa-fast-backward"></i>
+            </button>
+            <button
+              title="Previous frame"
+              aria-label="Previous frame"
+              onclick="anim.previous_frame()"
+            >
+              <i class="fa fa-step-backward"></i>
+            </button>
+            <button
+              title="Play backwards"
+              aria-label="Play backwards"
+              onclick="anim.reverse_animation()"
+            >
+              <i class="fa fa-play fa-flip-horizontal"></i>
+            </button>
+            <button
+              title="Pause"
+              aria-label="Pause"
+              onclick="anim.pause_animation()"
+            >
+              <i class="fa fa-pause"></i>
+            </button>
+            <button
+              title="Play"
+              aria-label="Play"
+              onclick="anim.play_animation()"
+            >
+              <i class="fa fa-play"></i>
+            </button>
+            <button
+              title="Next frame"
+              aria-label="Next frame"
+              onclick="anim.next_frame()"
+            >
+              <i class="fa fa-step-forward"></i>
+            </button>
+            <button
+              title="Last frame"
+              aria-label="Last frame"
+              onclick="anim.last_frame()"
+            >
+              <i class="fa fa-fast-forward"></i>
+            </button>
+            <button
+              title="Increase speed"
+              aria-label="Increase speed"
+              onclick="anim.faster()"
+            >
+              <i class="fa fa-plus"></i>
+            </button>
+          </div>
+          <form
+            title="Repetition mode"
+            aria-label="Repetition mode"
+            action="#n"
+            name="_anim_loop_select"
+            class="anim-state"
+          >
+            <input type="radio" name="state" value="once" id="_anim_radio1_" />
+            <label for="_anim_radio1_">Once</label>
+            <input
+              type="radio"
+              name="state"
+              value="loop"
+              id="_anim_radio2_"
+              checked
+            />
+            <label for="_anim_radio2_">Loop</label>
+            <input
+              type="radio"
+              name="state"
+              value="reflect"
+              id="_anim_radio3_"
+            />
+            <label for="_anim_radio3_">Reflect</label>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="index.js"></script>
+    <script src="anim.js"></script>
+  </body>
+</html>
