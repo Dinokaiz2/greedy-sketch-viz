@@ -36,12 +36,17 @@ body {
   width: min(100%, max(60%, 60vh));
 }
 
+/* This is a modified version of what Animation.to_jshtml() returns */
 .animation {
   display: inline-block;
   text-align: center;
+  max-width: 100%;
+}
+.animation > img {
+  max-width: 100%;
 }
 input[type="range"].anim-slider {
-  width: 374px;
+  width: 100%;
   margin-left: auto;
   margin-right: auto;
 }

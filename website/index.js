@@ -1,4 +1,4 @@
-const POINT_SIZE = 3;
+const POINT_SIZE = 5;
 const POINT_COLOR = "#ff0000";
 
 const canvas = document.getElementById("canvas");

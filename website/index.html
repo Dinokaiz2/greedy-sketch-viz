@@ -4,7 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
 
-    <title>Canvas Demo</title>
+    <title>Greedy Sketch Visualization</title>
+
+    <meta property="og:title" content="Greedy Sketch Visualization" />
 
     <link href="styles.css" rel="stylesheet" />
 
@@ -15,15 +17,15 @@
     />
   </head>
   <body>
-    <h1>Canvas Demo</h1>
-    <p>A simple canvas you can draw points on and click run on.</p>
+    <h1>Greedy Sketch Visualization</h1>
     <p>
-      The idea is to eventually have run hooked up to a Flask webserver, which
-      would do most of the calculations using our library and then have our thin
-      layer of Javascript to combine all the SVGs or whatever into an attractive
-      animation.
+      Place down as many points as you'd like and see an animation of the greedy
+      sketch of that those points'
+      <a
+        href="https://towardsdatascience.com/persistent-homology-with-examples-1974d4b9c3d0"
+        >persistence diagram</a
+      >.
     </p>
-    <p>Have fun!</p>
 
     <div class="display-area">
       <div class="canvas-buttons">
