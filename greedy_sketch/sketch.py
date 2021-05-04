@@ -20,7 +20,7 @@ def l_inf(x1, x2):
 
 
 def naive_greedy_sketch(pd, n=-1, minimal=True):
-    """Generate greedy permutation of points in persistence diagram.
+    """Generate greedy permutation and sketches of points in persistence diagram.
 
     Runs in O(n^2).
 
@@ -57,9 +57,6 @@ def naive_greedy_sketch(pd, n=-1, minimal=True):
 
         "sketches" (when `minimal=False`): A list of full descriptions of each
         greedy sketch.
-
-        "sketches" (when `minimal=False`): The original persistence diagram
-        (`pd`) passed in.
     """
 
     if n > len(pd):
@@ -153,14 +150,13 @@ def naive_greedy_sketch(pd, n=-1, minimal=True):
     if not minimal:
         ret["dist"] = dist_seq
         ret["voronoi"] = voronoi
-        ret["sketches"] = generate_sketches(perm, n=n)
+        ret["sketches"] = generate_sketches(perm, transport_plans, n)
         ret["persistence_diagram"] = pd
 
     return ret
 
 
-# not to be used generally
-def generate_sketches(perm, n=-1):
+def generate_sketches(perm, transport_plans, n=-1):
     """Generate a series of `n+1` greedy sketches of the given persistence diagram.
 
     Parameters
@@ -179,13 +175,25 @@ def generate_sketches(perm, n=-1):
         )
     if n < 0:
         n = len(perm)
+    if len(transport_plans) != n+1:
+        raise ValueError(
+            "Mismatch between transportation plan length and greedy permutation"
+        )
     sketches = []
+    mult_dict = defaultdict(int)
+    
     for i in range(n + 1):
-        sketch = np.empty((i, 2))
+        points = np.empty((i+1, 2))
+        mult = np.empty(i+1)
+        for p in transport_plans[i]:
+            mult_dict[p] += transport_plans[i][p]
         for j in range(i):
-            sketch[j][X] = perm[j][X]
-            sketch[j][Y] = perm[j][Y]
-        sketches.append(sketch)
+            points[j][X] = perm[j][X]
+            points[j][Y] = perm[j][Y]
+            mult[j] = mult_dict[tuple(perm[j])]
+        points[i] = [0,0]
+        mult[i] = mult_dict[(0,0)]
+        sketches.append((points, mult))
     return sketches
 
 

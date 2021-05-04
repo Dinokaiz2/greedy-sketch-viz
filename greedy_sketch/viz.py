@@ -76,7 +76,7 @@ def make_greedy_sketch_animation(
     fig = ax.figure
 
     # Unpack greedy_sketch
-    sketches = greedy_sketch["sketches"]
+    sketches = np.array(greedy_sketch["sketches"], dtype=object).T[0]
     perm = greedy_sketch["perm"]
     voronoi = greedy_sketch["voronoi"]
     orig_pts = greedy_sketch["persistence_diagram"]

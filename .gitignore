@@ -11,3 +11,6 @@ venv/
 
 # Ignore Jupyter notebook stuff
 .ipynb_checkpoints/
+
+#Ignore Sid personal notebook
+sketch_nb.ipynb
